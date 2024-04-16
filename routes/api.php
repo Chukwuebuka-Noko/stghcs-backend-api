@@ -82,6 +82,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('single-client', [ClientController::class, 'show']);
                 Route::post('create-client', [ClientController::class, 'store']);
                 Route::post('update-client', [ClientController::class, 'update']);
+                Route::put('archive-unarchive-client', [ClientController::class, 'archive_unarchive']);
                 Route::delete('delete-client', [ClientController::class, 'destroy']);
             });
             Route::prefix('gig')->group(function() {

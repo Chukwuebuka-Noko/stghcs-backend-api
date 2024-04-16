@@ -22,7 +22,7 @@ class UserController extends Controller
     {
         $users = User::get();
         if ($users->isEmpty()) {
-            return response()->json(['message'=>'User(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'User(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All Users',
@@ -31,7 +31,7 @@ class UserController extends Controller
             'subject_type' => get_class($users),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Users fetched successfully","data"=>$users],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Users fetched successfully","data"=>$users],200);
     }
 
     /**
@@ -55,7 +55,7 @@ class UserController extends Controller
             'role_id' => ['required', 'exists:roles,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         if($request->role_id == 6){
             $employee_id = sprintf("CSP%05d", random_int(1000, 100000) + 1);
@@ -105,7 +105,7 @@ class UserController extends Controller
             'subject_type' => get_class($user),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'User created successfully','data'=>$user], 201);
+        return response()->json(['status'=>201,'response'=>'User Created','message'=>'User created successfully','data'=>$user], 201);
     }
 
     /**
@@ -115,7 +115,7 @@ class UserController extends Controller
     {
         $user = User::where('id', $request->id)->first();
         if (!$user) {
-            return response()->json(['message'=>'User does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'User does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View A User Profile',
@@ -124,7 +124,7 @@ class UserController extends Controller
             'subject_type' => get_class($user),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'User successfully fetched', 'data'=>$user], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'User successfully fetched', 'data'=>$user], 200);
     }
 
     /**
@@ -148,7 +148,7 @@ class UserController extends Controller
             'role_id' => ['required', 'exists:roles,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $user = User::find($request->id);
@@ -174,7 +174,7 @@ class UserController extends Controller
             'subject_type' => get_class($user),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'User created successfully','data'=>$user], 200);
+        return response()->json(['status'=>200,'response'=>'User Updated','message'=>'User updated successfully','data'=>$user], 200);
     }
 
     /**
@@ -184,7 +184,7 @@ class UserController extends Controller
     {
         $user = User::find($request->id);
         if (!$user) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $user->delete();
         ActivityLog::create([
@@ -194,7 +194,7 @@ class UserController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'User Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'User Deleted successfully']);
     }
 
     public function generateSecurePassword($length = 20) 
@@ -216,7 +216,7 @@ class UserController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                'min:8',
+                'min:14',
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
@@ -224,7 +224,7 @@ class UserController extends Controller
             ],
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $record = DB::table('password_reset_tokens')
@@ -233,21 +233,21 @@ class UserController extends Controller
                     ->first();
     
         if (!$record || now()->subMinutes(1440)->greaterThan($record->created_at)) {
-            return response()->json(['message' => 'Invalid or expired reset code.'], 422);
+            return response()->json(['status'=>422,'response'=>'Token Expired','message' => 'Invalid or expired reset token.'], 422);
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
         $temp_password = $user->password;
         if(!Hash::check($request->temp_password, $temp_password))
         {
-            return response()->json(['message' => 'Temporary Password do not match.'], 422);
+            return response()->json(['status'=>401,'response'=>'Unauthorized','message' => 'Temporary Password do not match.'], 401);
         }
         $user->password = Hash::make($request->password);
         $user->is_temporary_password = false;
         $user->save();
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-        return response()->json(['message' => 'Password has been successfully reset.','data'=> $user], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Password has been successfully reset.','data'=> $user], 200);
     }
 
     public function assignRole(Request $request)
@@ -257,7 +257,7 @@ class UserController extends Controller
             'roles' => 'required',
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $user = User::find($request->user_id);
@@ -269,7 +269,7 @@ class UserController extends Controller
             'subject_id' => $user->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Role(s) successfully assign to '.$user->last_name.' '.$user->first_name]);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Role(s) successfully assign to '.$user->last_name.' '.$user->first_name]);
     }
 
     public function fetchRoles(Request $request)
@@ -278,7 +278,7 @@ class UserController extends Controller
             'user_id' => ['required', 'exists:users,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $user = User::find($request->user_id);
@@ -291,6 +291,6 @@ class UserController extends Controller
             'subject_id' => $user->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Role(s) assigned to '.$user->last_name.' '.$user->first_name, 'roles' => $roles]);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Role(s) assigned to '.$user->last_name.' '.$user->first_name, 'roles' => $roles]);
     }
 }

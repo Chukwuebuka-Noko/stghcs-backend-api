@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('plan_of_care');
             $table->string('city');
             $table->string('zip_code');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

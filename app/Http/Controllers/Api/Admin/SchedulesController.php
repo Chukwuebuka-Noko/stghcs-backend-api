@@ -19,7 +19,7 @@ class SchedulesController extends Controller
     {
         $schedules = Schedule::get();
         if ($schedules->isEmpty()) {
-            return response()->json(['message'=>'Schedule(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Schedule(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All Schedule',
@@ -28,7 +28,7 @@ class SchedulesController extends Controller
             'subject_type' => get_class($schedules),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Users fetched successfully","data"=>$schedules],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Schedule fetched successfully","data"=>$schedules],200);
     }
 
     /**
@@ -42,7 +42,7 @@ class SchedulesController extends Controller
             'gig_id' => ['required', 'exists:gigs,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $days = json_encode($request->days);
         $schedule = json_encode($request->schedule);
@@ -58,7 +58,7 @@ class SchedulesController extends Controller
             'subject_type' => get_class($schedule),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Schedule created successfully','data'=>$schedule], 201);
+        return response()->json(['status'=>201,'response'=>'Schedule Created','message'=>'Schedule created successfully','data'=>$schedule], 201);
     }
 
     /**
@@ -68,7 +68,7 @@ class SchedulesController extends Controller
     {
         $schedule = Schedule::find($request->id);
         if (!$schedule) {
-            return response()->json(['message'=>'Schedule does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Schedule does not exist'], 404);
         }
         $gig = Gig::where('id', $schedule->id)->first();
         ActivityLog::create([
@@ -78,7 +78,7 @@ class SchedulesController extends Controller
             'subject_type' => get_class($schedule),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Schedule successfully fetched','data'=> $schedule ,'gig'=>$gig], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'Schedule successfully fetched','data'=> $schedule ,'gig'=>$gig], 200);
     }
 
     /**
@@ -92,7 +92,7 @@ class SchedulesController extends Controller
             'gig_id' => ['required', 'exists:gigs,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $days = json_encode($request->days);
         $schedule_update = json_encode($request->schedule);
@@ -109,7 +109,7 @@ class SchedulesController extends Controller
             'subject_type' => get_class($schedule),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Schedule updated successfully','data'=>$schedule], 201);
+        return response()->json(['status'=>200,'response'=>'Schedule Updated','message'=>'Schedule updated successfully','data'=>$schedule], 201);
     }
 
     /**
@@ -119,7 +119,7 @@ class SchedulesController extends Controller
     {
         $schedule = Schedule::find($request->id);
         if (!$schedule) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $schedule->delete();
         ActivityLog::create([
@@ -129,6 +129,6 @@ class SchedulesController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Schedule Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Schedule Deleted successfully']);
     }
 }

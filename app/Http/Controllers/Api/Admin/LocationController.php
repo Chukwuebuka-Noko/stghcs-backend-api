@@ -18,7 +18,7 @@ class LocationController extends Controller
     {
         $locations = Location::get();
         if ($locations->isEmpty()) {
-            return response()->json(['message'=>'Location(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Location(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View Locations',
@@ -27,7 +27,7 @@ class LocationController extends Controller
             'subject_type' => get_class($locations),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Locations fetched successfully","data"=>$locations],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Locations fetched successfully","data"=>$locations],200);
     }
 
     /**
@@ -47,7 +47,7 @@ class LocationController extends Controller
             'coordinate' => ['required']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $coordinate = json_encode($request->coordinate);
@@ -66,7 +66,7 @@ class LocationController extends Controller
             'subject_type' => get_class($location),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Location created successfully','data'=>$location], 201);
+        return response()->json(['status'=>201,'response'=>'Location Created','message'=>'Location created successfully','data'=>$location], 201);
     }
 
     /**
@@ -86,12 +86,12 @@ class LocationController extends Controller
             'coordinate' => ['required']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $location = Location::find($request->id);
         if (!$location) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
 
         $coordinate = json_encode($request->coordinate);
@@ -110,7 +110,7 @@ class LocationController extends Controller
             'subject_type' => get_class($location),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Role updated successfully','data'=>$location], 201);
+        return response()->json(['status'=>200,'response'=>'Location Updated','message'=>'Role updated successfully','data'=>$location], 201);
     }
 
     /**
@@ -120,7 +120,7 @@ class LocationController extends Controller
     {
         $location = Location::find($request->id);
         if (!$location) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $location->delete();
         ActivityLog::create([
@@ -130,6 +130,6 @@ class LocationController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Location Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Location Deleted successfully']);
     }
 }

@@ -18,7 +18,7 @@ class ClientController extends Controller
     {
         $clients = Client::get();
         if ($clients->isEmpty()) {
-            return response()->json(['message'=>'Client(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Client(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All Clients',
@@ -27,7 +27,7 @@ class ClientController extends Controller
             'subject_type' => get_class($clients),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Client fetched successfully","data"=>$clients],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Client fetched successfully","data"=>$clients],200);
     }
 
     /**
@@ -48,7 +48,7 @@ class ClientController extends Controller
             'plan_of_care' => ['required']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $coordinate = json_encode($request->coordinate);
@@ -80,7 +80,7 @@ class ClientController extends Controller
             'subject_type' => get_class($client),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Client created successfully','data'=>$client], 201);
+        return response()->json(['status'=>201,'response'=>'Client Created','message'=>'Client created successfully','data'=>$client], 201);
     }
 
     /**
@@ -90,7 +90,7 @@ class ClientController extends Controller
     {
         $client = Client::where('id', $request->id)->first();
         if (!$client) {
-            return response()->json(['message'=>'Client does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Client does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View A Client Details',
@@ -99,7 +99,7 @@ class ClientController extends Controller
             'subject_type' => get_class($client),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Client successfully fetched', 'data'=>$client], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'Client successfully fetched', 'data'=>$client], 200);
     }
 
     /**
@@ -119,7 +119,7 @@ class ClientController extends Controller
             'address2' => ['nullable','string']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $coordinate = json_encode($request->coordinate);
         $client = Client::find($request->id);
@@ -158,7 +158,7 @@ class ClientController extends Controller
             'subject_type' => get_class($client),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Client updated successfully','data'=>$client], 200);
+        return response()->json(['status'=>200,'response'=>'Client Updated','message'=>'Client updated successfully','data'=>$client], 200);
     }
 
     /**
@@ -168,7 +168,7 @@ class ClientController extends Controller
     {
         $client = Client::find($request->id);
         if (!$client) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $client->delete();
         ActivityLog::create([
@@ -178,6 +178,35 @@ class ClientController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Client Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Client Deleted successfully']);
     }
+
+    public function archive_unarchive(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'type' => ['required', 'string', 'in:Archive,Unarchive,archive,unarchive'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status'=>422, 'response'=>'Unprocessable Content', 'errors' => $validator->errors()], 422);
+        }
+
+        $client = Client::find($request->id);
+        if (!$client) {
+            return response()->json(['status'=>404, 'response'=>'Not Found', 'message' => 'Not Found!'], 404);
+        }
+
+        $status = ($request->type == "Archive" || $request->type == 'archive') ? "inactive" : "active";
+        $type = ($request->type == "Archive" || $request->type == 'archive') ? "archived" : "unarchived";
+
+        try {
+            $client->update(['status' => $status]);
+        } catch (\Exception $e) {
+            return response()->json(['status'=>500, 'response'=>'Internal Server Error', 'message' => 'Failed to update client'], 500);
+        }
+
+        // Optional: Return client data to verify update
+        return response()->json(['status'=>200, 'response'=>'Successful', 'message' => 'Client ' . $type . ' successfully', 'client' => $client]);
+    }
+
 }

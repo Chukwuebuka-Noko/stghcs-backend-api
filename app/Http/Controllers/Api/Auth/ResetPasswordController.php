@@ -20,7 +20,7 @@ class ResetPasswordController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                'min:8',
+                'min:14',
                 'regex:/[a-z]/',
                 'regex:/[A-Z]/',
                 'regex:/[0-9]/',
@@ -28,7 +28,7 @@ class ResetPasswordController extends Controller
             ],
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         
         $record = DB::table('password_reset_tokens')
@@ -37,7 +37,7 @@ class ResetPasswordController extends Controller
                     ->first();
     
         if (!$record || now()->subMinutes(1440)->greaterThan($record->created_at)) {
-            return response()->json(['message' => 'Invalid or expired reset code.'], 422);
+            return response()->json(['status'=>422,'response'=>'Token Expired','message' => 'Invalid or expired reset code.'], 422);
         }
     
         $user = User::where('email', $request->email)->firstOrFail();
@@ -48,7 +48,7 @@ class ResetPasswordController extends Controller
         // Optionally delete the record from password_resets table
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
     
-        return response()->json(['message' => 'Password has been successfully reset.'],200);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Password has been successfully reset.'],200);
     }
 
 }

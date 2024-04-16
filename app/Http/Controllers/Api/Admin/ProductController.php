@@ -18,7 +18,7 @@ class ProductController extends Controller
     {
         $products = Product::get();
         if ($products->isEmpty()) {
-            return response()->json(['message'=>'Product(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Product(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All Products',
@@ -27,7 +27,7 @@ class ProductController extends Controller
             'subject_type' => get_class($products),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Product fetched successfully","data"=>$products],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Product fetched successfully","data"=>$products],200);
     }
 
     /**
@@ -50,7 +50,7 @@ class ProductController extends Controller
             'status' => ['required','string'],
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $tag = json_encode($request->tag);
@@ -77,7 +77,7 @@ class ProductController extends Controller
             'subject_type' => get_class($product),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Product created successfully','data'=>$product], 201);
+        return response()->json(['status'=>201,'response'=>'Product Created','message'=>'Product created successfully','data'=>$product], 201);
     }
 
     /**
@@ -87,7 +87,7 @@ class ProductController extends Controller
     {
         $product = Product::where('id', $request->id)->first();
         if (!$product) {
-            return response()->json(['message'=>'Product does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Product does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View A product Details',
@@ -96,7 +96,7 @@ class ProductController extends Controller
             'subject_type' => get_class($product),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Product successfully fetched', 'data'=>$product], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'Product successfully fetched', 'data'=>$product], 200);
     }
 
     /**
@@ -119,7 +119,7 @@ class ProductController extends Controller
             'status' => ['required','string'],
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $tag = json_encode($request->tag);
@@ -151,7 +151,7 @@ class ProductController extends Controller
             'subject_type' => get_class($product),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Product updated successfully','data'=>$product], 200);
+        return response()->json(['status'=>200,'response'=>'Product Updated','message'=>'Product updated successfully','data'=>$product], 200);
     }
 
     /**
@@ -161,7 +161,7 @@ class ProductController extends Controller
     {
         $product = Product::find($request->id);
         if (!$product) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $product->delete();
         ActivityLog::create([
@@ -171,6 +171,6 @@ class ProductController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Product Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Product Deleted successfully']);
     }
 }

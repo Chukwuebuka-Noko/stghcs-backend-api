@@ -19,19 +19,19 @@ class ForgotPasswordController extends Controller
     {
         $validator = Validator::make($request->all(), ['email' => 'required|email']);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         // Throttle reset attempts
         $throttleKey = 'password-reset:' . $request->ip();
         if (!RateLimiter::remaining($throttleKey, $maxAttempts = 5)) {
-            return response()->json(['message' => 'Too many requests, please try again later.'], 429);
+            return response()->json(['status'=>429,'response'=>'Too Many Requests','message' => 'Too many requests, please try again later.'], 429);
         }
         RateLimiter::hit($throttleKey, 60); // Reset allowed every 60 seconds
 
         $user = User::where('email',$request->email)->first();
         if (!$user) {
-            return response()->json(['message' => 'E-mail does not exist.'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'E-mail does not exist.'], 404);
         }
 
         $bytes = random_bytes(45);
@@ -53,6 +53,6 @@ class ForgotPasswordController extends Controller
         // Send the code to the user
         Mail::to($user->email)->send(new ResetPassword($user, $token, $url,$expire));
 
-        return response()->json(['message' => 'Reset link has been sent to your email.']);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Reset link has been sent to your email.']);
     }
 }

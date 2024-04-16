@@ -18,7 +18,7 @@ class PermissionController extends Controller
     {
         $permissions = Permission::get();
         if ($permissions->isEmpty()) {
-            return response()->json(['message'=>'Permission(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Permission(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View Permissions',
@@ -27,7 +27,7 @@ class PermissionController extends Controller
             'subject_type' => get_class($permissions),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Permissions fetched successfully","data"=>$permissions],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Permissions fetched successfully","data"=>$permissions],200);
     }
 
     /**
@@ -43,7 +43,7 @@ class PermissionController extends Controller
             ]
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $permission = Permission::create([
@@ -56,7 +56,7 @@ class PermissionController extends Controller
             'subject_type' => get_class($permission),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Permission created successfully','data'=>$permission], 201);
+        return response()->json(['status'=>201,'response'=>'Premission Created','message'=>'Permission created successfully','data'=>$permission], 201);
     }
 
     /**
@@ -72,12 +72,12 @@ class PermissionController extends Controller
             ]
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $permission = Permission::find($request->id);
         if (!$permission) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
 
         $permission->update([
@@ -91,7 +91,7 @@ class PermissionController extends Controller
             'subject_type' => get_class($permission),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Permission updated successfully','data'=>$permission], 201);
+        return response()->json(['status'=>200,'response'=>'Permission updated','message'=>'Permission updated successfully','data'=>$permission], 201);
     }
 
     /**
@@ -101,7 +101,7 @@ class PermissionController extends Controller
     {
         $permission = Permission::find($request->id);
         if (!$permission) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $permission->delete();
         ActivityLog::create([
@@ -111,6 +111,6 @@ class PermissionController extends Controller
             'subject_id'=> $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Permission Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Permission Deleted successfully']);
     }
 }

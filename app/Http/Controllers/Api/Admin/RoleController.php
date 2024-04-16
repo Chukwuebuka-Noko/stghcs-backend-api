@@ -15,7 +15,7 @@ class RoleController extends Controller
     {
         $roles = Role::all();
         if ($roles->isEmpty()) {
-            return response()->json(['message'=>'Role(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Role(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View Roles',
@@ -24,7 +24,7 @@ class RoleController extends Controller
             'subject_type' => get_class($roles),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Roles fetched successfully","data"=>$roles],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Roles fetched successfully","data"=>$roles],200);
     }
 
     public function store(Request $request)
@@ -34,7 +34,7 @@ class RoleController extends Controller
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $role = Role::create([
@@ -48,7 +48,7 @@ class RoleController extends Controller
             'subject_type' => get_class($role),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Role created successfully','data'=>$role], 201);
+        return response()->json(['status'=>201,'response'=>'Role Created','message'=>'Role created successfully','data'=>$role], 201);
     }
 
     public function update(Request $request)
@@ -58,12 +58,12 @@ class RoleController extends Controller
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         
         $role = Role::find($request->id);
         if (!$role) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $role->update([
             'name' => $request->name
@@ -75,14 +75,14 @@ class RoleController extends Controller
             'subject_type' => get_class($role),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Role updated successfully','data'=>$role], 201);
+        return response()->json(['status'=>200,'response'=>'Role Updated','message'=>'Role updated successfully','data'=>$role], 201);
     }
 
     public function destroy(Request $request)
     {
         $role = Role::find($request->id);
         if (!$role) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $role->delete();
         ActivityLog::create([
@@ -92,7 +92,7 @@ class RoleController extends Controller
             'subject_id'=> $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Role Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Role Deleted successfully']);
     }
 
     public function givePermissionToRole(Request $request)
@@ -104,6 +104,6 @@ class RoleController extends Controller
         $role = Role::findOrFail($request->role_id);
         $role->syncPermissions($request->permission);
 
-        return response()->json(['message' => 'Permission(s) assigned to the role successfully']);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Permission(s) assigned to the role successfully']);
     }
 }

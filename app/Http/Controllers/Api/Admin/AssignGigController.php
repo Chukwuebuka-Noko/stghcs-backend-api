@@ -19,7 +19,7 @@ class AssignGigController extends Controller
     {
         $assign_gig =  AssignGig::with('user')->with('gig')->with('schedule')->get();
         if ($assign_gig->isEmpty()) {
-            return response()->json(['message'=>'Assigned Gig(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Assigned Gig(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All gigs assign',
@@ -28,7 +28,7 @@ class AssignGigController extends Controller
             'subject_type' => get_class($assign_gig ),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"All Assigned gig(s) fetched successfully","data"=>$assign_gig ],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"All Assigned gig(s) fetched successfully","data"=>$assign_gig ],200);
     }
 
     /**
@@ -42,11 +42,11 @@ class AssignGigController extends Controller
             'schedule_id' => ['required', 'exists:schedules,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $user = User::find($request->user_id);
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'User not found'], 404);
         }
 
         $assign_gig = AssignGig::create([
@@ -57,7 +57,7 @@ class AssignGigController extends Controller
 
         $assigned_gig = AssignGig::where('id', $assign_gig->id)->with('user')->with('gig')->with('schedule')->first();
         if (!$assigned_gig) {
-            return response()->json(['message' => 'Assigned gig not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Assigned gig not found'], 404);
         }
         ActivityLog::create([
             'action' => 'Gig has been assigned to '.$user->last_name.' '.$user->first_name,
@@ -66,7 +66,7 @@ class AssignGigController extends Controller
             'subject_type' => get_class($assign_gig),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Gig assigned successfully','data'=>[$assigned_gig]], 201);
+        return response()->json(['status'=>201,'response'=>'Assigned Gig','message'=>'Gig assigned successfully','data'=>[$assigned_gig]], 201);
     }
 
     /**
@@ -76,12 +76,12 @@ class AssignGigController extends Controller
     {
         $assign_gig =  AssignGig::find($request->id)->with('user')->with('gig')->with('schedule')->first();
         if (!$assign_gig) {
-            return response()->json(['message'=>'Assigned Gig not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Assigned Gig not found'], 404);
         }
         $assigned_user = $assign_gig->user_id;
         $user = User::find($assigned_user);
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'User not found'], 404);
         }
         ActivityLog::create([
             'action' => 'View gigs assigned to '.$user->last_name.' '.$user->first_name,
@@ -90,7 +90,7 @@ class AssignGigController extends Controller
             'subject_type' => get_class($assign_gig ),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Gig assigned to ".$user->last_name." ".$user->first_name." fetched successfully","data"=>$assign_gig ],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Gig assigned to ".$user->last_name." ".$user->first_name." fetched successfully","data"=>$assign_gig ],200);
     }
 
     /**
@@ -104,11 +104,11 @@ class AssignGigController extends Controller
             'schedule_id' => ['required', 'exists:schedules,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $user = User::find($request->user_id);
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'User not found'], 404);
         }
         $assign_gig = AssignGig::find($request->id);
 
@@ -120,7 +120,7 @@ class AssignGigController extends Controller
 
         $assigned_gig = AssignGig::where('id', $assign_gig->id)->with('user')->with('gig')->with('schedule')->first();
         if (!$assigned_gig) {
-            return response()->json(['message' => 'Assigned gig not found'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Assigned gig not found'], 404);
         }
         ActivityLog::create([
             'action' => 'Gig has been assigned to '.$user->last_name.' '.$user->first_name.' was updated',
@@ -129,7 +129,7 @@ class AssignGigController extends Controller
             'subject_type' => get_class($assign_gig),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Assigned Gig updated successfully','data'=>[$assigned_gig]], 200);
+        return response()->json(['status'=>200,'response'=>'Updated Assigned Gig','message'=>'Assigned Gig updated successfully','data'=>[$assigned_gig]], 200);
     }
 
     /**
@@ -139,7 +139,7 @@ class AssignGigController extends Controller
     {
         $gig = AssignGig::find($request->id);
         if (!$gig) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $gig->delete();
         ActivityLog::create([
@@ -149,6 +149,6 @@ class AssignGigController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Assigned Gig Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'Not Content','message' => 'Assigned Gig Deleted successfully'],200);
     }
 }

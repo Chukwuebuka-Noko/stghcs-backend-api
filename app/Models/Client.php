@@ -18,6 +18,7 @@ class Client extends Model
         'zip_code',
         'address1',
         'address2',
-        'coordinate'
+        'coordinate',
+        'status'
     ];
 }

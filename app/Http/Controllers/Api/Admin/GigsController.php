@@ -18,16 +18,16 @@ class GigsController extends Controller
     {
         $gigs = Gig::get();
         if ($gigs->isEmpty()) {
-            return response()->json(['message'=>'Gig(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Gig(s) does not exist'], 404);
         }
         ActivityLog::create([
-            'action' => 'View All Users',
+            'action' => 'View All Gigs',
             'description' => auth()->user()->last_name.' '.auth()->user()->first_name.' viewed all users at '.Carbon::now()->format('h:i:s A'),
             'subject_id' => auth()->id(),
             'subject_type' => get_class($gigs),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Users fetched successfully","data"=>$gigs],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Gigs fetched successfully","data"=>$gigs],200);
     }
 
     /**
@@ -42,7 +42,7 @@ class GigsController extends Controller
             'created_by' => ['required', 'exists:users,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $gig = Gig::create([
             'title' => $request->title,
@@ -57,7 +57,7 @@ class GigsController extends Controller
             'subject_type' => get_class($gig),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Gig created successfully','data'=>$gig], 201);
+        return response()->json(['status'=>201,'response'=>'Created Gig','message'=>'Gig created successfully','data'=>$gig], 201);
     }
 
     /**
@@ -67,7 +67,7 @@ class GigsController extends Controller
     {
         $gig = Gig::where('id', $request->id)->first();
         if (!$gig) {
-            return response()->json(['message'=>'Gig does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Gig does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View A Gig Details',
@@ -76,7 +76,7 @@ class GigsController extends Controller
             'subject_type' => get_class($gig),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Gig successfully fetched', 'data'=>$gig], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'Gig successfully fetched', 'data'=>$gig], 200);
     }
 
     /**
@@ -91,7 +91,7 @@ class GigsController extends Controller
             'created_by' => ['required', 'exists:users,id']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $gig = Gig::find($request->id);
         $gig->update([
@@ -107,7 +107,7 @@ class GigsController extends Controller
             'subject_type' => get_class($gig),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Gig updated successfully','data'=>$gig], 201);
+        return response()->json(['status'=>201,'response'=>'Gig Updated','message'=>'Gig updated successfully','data'=>$gig], 201);
     }
 
     /**
@@ -117,7 +117,7 @@ class GigsController extends Controller
     {
         $gig = Gig::find($request->id);
         if (!$gig) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $gig->delete();
         ActivityLog::create([
@@ -127,6 +127,6 @@ class GigsController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Gig Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Gig Deleted successfully']);
     }
 }

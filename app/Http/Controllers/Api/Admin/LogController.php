@@ -15,8 +15,8 @@ class LogController extends Controller
     public function logs(){
         $logs = ActivityLog::get();
         if ($logs->isEmpty()) {
-            return response()->json(['message'=>'Log(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Log(s) does not exist'], 404);
         }
-        return response()->json(["message"=>"Logs fetched successfully","data"=>$logs],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Logs fetched successfully","data"=>$logs],200);
     }
 }

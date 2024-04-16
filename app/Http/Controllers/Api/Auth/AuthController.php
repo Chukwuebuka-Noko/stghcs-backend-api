@@ -25,7 +25,7 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (! $token = Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['status'=>402,'response'=>'Unauthorized','message' => 'Invalid E-mail/Password Provided'], 401);
         }
         $user = User::where('email',$request->email)->first();
         $is_verified = $user->email_verified_at;
@@ -34,7 +34,7 @@ class AuthController extends Controller
         if ($is_verified == null) {
             $token_mail = Crypt::encryptString($user->email);
             Mail::to($request->email)->send(new VerifyEmail($user, $token_mail, $sender));
-            return response()->json(['message' => "E-mail Verification Required"], 400);
+            return response()->json(['status'=>400,'response'=>'Bad Request','message' => "E-mail Verification Required"], 400);
         }
 
         ActivityLog::create([
@@ -50,7 +50,7 @@ class AuthController extends Controller
 
     public function createToken($token)
     {
-        return response()->json([
+        return response()->json(['status'=>200,'response'=>'Successful',
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 3600,
@@ -63,8 +63,7 @@ class AuthController extends Controller
         $token = $request->query('token', '');
 
         if (!$token) {
-            return response()->json([
-                'status' => 'Request Failed',
+            return response()->json(['status'=>404,'response'=>'Token Missing',
                 'message' => 'Invalid URL provided',
             ], 404);
         }
@@ -74,8 +73,7 @@ class AuthController extends Controller
             $user = User::where('email', $email)->firstOrFail();
 
             if ($user->email_verified_at) {
-                return response()->json([
-                    'status' => 'Request Failed',
+                return response()->json(['status'=>400,'response'=>'Bad Request',
                     'message' => 'Email already verified',
                 ], 400);
             }
@@ -91,15 +89,13 @@ class AuthController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'status' => 'Successful',
+            return response()->json(['status'=>200,'response'=>'Successful',
                 'message' => 'E-mail address has been verified',
             ], 200);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'Request Failed',
+            return response()->json(['status'=>400,'response'=>'Request Failed',
                 'message' => 'Invalid token provided',
-            ], 404);
+            ], 400);
         }
     }
 
@@ -119,7 +115,7 @@ class AuthController extends Controller
             'user_id' => auth()->id(),
         ]);
         auth('api')->logout();
-        return response()->json([
+        return response()->json(['status'=>200,'response'=>'Successful',
             'message' => 'User Logged out successful'
         ]);
     }
@@ -128,19 +124,19 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'old_password' => 'required',
-            'password' => ['required','confirmed','min:8','regex:/[a-z]/','regex:/[A-Z]/','regex:/[0-9]/','regex:/[@$!%*#?&]/',],
+            'password' => ['required','confirmed','min:14','regex:/[a-z]/','regex:/[A-Z]/','regex:/[0-9]/','regex:/[@$!%*#?&]/',],
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $user = User::find(auth()->user()->id);
         // Check if the old_password matches the current password
         if (!Hash::check($request->old_password, $user->password)) {
-            return response()->json(['message' => 'Your current password is incorrect.'], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','message' => 'Your current password is incorrect.'], 422);
         }
         if (Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Password already used, choose a different password.'], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','message' => 'Password already used, choose a different password.'], 422);
         }
         $user->password = Hash::make($request->password);
         $user->save();
@@ -154,6 +150,6 @@ class AuthController extends Controller
         ]);
 
         auth('api')->logout();
-        return response()->json(['message' => 'Password has been successfully updated, Please login with the new password to continue'], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message' => 'Password has been successfully updated, Please login with the new password to continue'], 200);
     }
 }

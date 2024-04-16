@@ -18,7 +18,7 @@ class CategoryController extends Controller
     {
         $categories = Category::get();
         if ($categories->isEmpty()) {
-            return response()->json(['message'=>'Category(s) does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Category(s) does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View All Categories',
@@ -27,7 +27,7 @@ class CategoryController extends Controller
             'subject_type' => get_class($categories),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(["message"=>"Category fetched successfully","data"=>$categories],200);
+        return response()->json(['status'=>200,'response'=>'Successful',"message"=>"Category fetched successfully","data"=>$categories],200);
     }
 
     /**
@@ -39,7 +39,7 @@ class CategoryController extends Controller
             'category' => ['required','string','unique:categories,category']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
 
         $category = Category::create([
@@ -52,7 +52,7 @@ class CategoryController extends Controller
             'subject_type' => get_class($category),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Category created successfully','data'=>$category], 201);
+        return response()->json(['status'=>201,'response'=>'Created Category','message'=>'Category created successfully','data'=>$category], 201);
     }
 
     /**
@@ -62,7 +62,7 @@ class CategoryController extends Controller
     {
         $category = Category::where('id', $request->id)->first();
         if (!$category) {
-            return response()->json(['message'=>'Category does not exist'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message'=>'Category does not exist'], 404);
         }
         ActivityLog::create([
             'action' => 'View A Category Details',
@@ -71,7 +71,7 @@ class CategoryController extends Controller
             'subject_type' => get_class($category),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Category successfully fetched', 'data'=>$category], 200);
+        return response()->json(['status'=>200,'response'=>'Successful','message'=>'Category successfully fetched', 'data'=>$category], 200);
     }
 
     /**
@@ -83,7 +83,7 @@ class CategoryController extends Controller
             'category' => ['required','string']
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['status'=>422,'response'=>'Unprocessable Content','errors' => $validator->errors()], 422);
         }
         $category = Category::find($request->id);
         // Prepare the data to be updated
@@ -100,7 +100,7 @@ class CategoryController extends Controller
             'subject_type' => get_class($category),
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message'=>'Category updated successfully','data'=>$category], 200);
+        return response()->json(['status'=>200,'response'=>'Category Updated','message'=>'Category updated successfully','data'=>$category], 200);
     }
 
     /**
@@ -110,7 +110,7 @@ class CategoryController extends Controller
     {
         $category = Category::find($request->id);
         if (!$category) {
-            return response()->json(['message' => 'Not Found!'], 404);
+            return response()->json(['status'=>404,'response'=>'Not Found','message' => 'Not Found!'], 404);
         }
         $category->delete();
         ActivityLog::create([
@@ -120,6 +120,6 @@ class CategoryController extends Controller
             'subject_id' => $request->id,
             'user_id' => auth()->id(),
         ]);
-        return response()->json(['message' => 'Category Deleted successfully']);
+        return response()->json(['status'=>204,'response'=>'No Content','message' => 'Category Deleted successfully']);
     }
 }
